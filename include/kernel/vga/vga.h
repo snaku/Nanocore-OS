@@ -9,5 +9,6 @@ enum VgaColor
     VGA_COLOR_MAX = 0x100
 };
 
+void vgaPutchar(char c, int color);
 void vgaPuts(const char* str, int color);
 void vgaClear();

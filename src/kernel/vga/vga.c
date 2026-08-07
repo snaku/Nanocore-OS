@@ -3,17 +3,53 @@
 
 #define VGA_COL_MAX  80
 #define VGA_LINE_MAX 25
-#define VGA_SET(col, c) (sv_vgaAddr[s_vga.cursor++] = (((unsigned short)(col)) << 8) | (unsigned char)(c))
 
 typedef struct Vga
 {
     int cursor;
     int currCol;
+    int currLine;
 } Vga;
 
 static volatile unsigned short* sv_vgaAddr = (volatile unsigned short*)0xb8000;
 
 static Vga s_vga;
+
+static void vgaScroll()
+{
+    for (int i = 1; i < VGA_LINE_MAX; i++)
+    {
+        for (int j = 0; j < VGA_COL_MAX; j++)
+        {
+            sv_vgaAddr[(i - 1) * VGA_COL_MAX + j] = sv_vgaAddr[i * VGA_COL_MAX + j];
+        }
+    }
+
+    for (int i = 0; i < VGA_COL_MAX; i++)
+    {
+        sv_vgaAddr[(VGA_LINE_MAX - 1) * VGA_COL_MAX + i] = ((unsigned short)VGA_COLOR_DEFAULT << 8) | ' ';
+    }
+
+    s_vga.cursor = (VGA_LINE_MAX - 1) * VGA_COL_MAX;
+    s_vga.currCol = 0;
+    s_vga.currLine = VGA_LINE_MAX - 1;
+}
+
+void vgaPutchar(char c, int color)
+{
+    sv_vgaAddr[s_vga.cursor++] = (color << 8) | c;
+
+    if (++s_vga.currCol >= VGA_COL_MAX)
+    {
+        s_vga.currCol = 0;
+        s_vga.currLine++;
+    }
+
+    if (s_vga.currLine >= VGA_LINE_MAX)
+    {
+        vgaScroll();
+    }
+}
 
 void vgaPuts(const char* str, int color)
 {
@@ -32,15 +68,15 @@ void vgaPuts(const char* str, int color)
             s_vga.cursor += (VGA_COL_MAX - s_vga.currCol);
             s_vga.currCol = 0;
 
+            if (++s_vga.currLine >= VGA_LINE_MAX)
+            {
+                vgaScroll();
+            }
+
             continue;
         }
 
-        if (++s_vga.currCol >= VGA_COL_MAX)
-        {
-            s_vga.currCol = 0;
-        }
-
-        VGA_SET(color, c);
+        vgaPutchar(c, color);
     }
 }
 
@@ -48,9 +84,10 @@ void vgaClear()
 {
     for (int i = 0; i < VGA_COL_MAX * VGA_LINE_MAX; i++)
     {
-        VGA_SET(VGA_COLOR_DEFAULT, ' ');
+        vgaPutchar(' ', VGA_COLOR_DEFAULT);
     }
 
     s_vga.cursor = 0;
     s_vga.currCol = 0;
+    s_vga.currLine = 0;
 }
