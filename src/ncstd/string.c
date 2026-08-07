@@ -1,7 +1,7 @@
 #include "ncstd/string.h"
 #include "ncstd/memory.h"
 
-int strlen(const char* str)
+size_t strlen(const char* str)
 {
     if (str == NULL)
     {
@@ -16,4 +16,9 @@ int strlen(const char* str)
     }
 
     return len;
+}
+
+char* strcpy(char* dst, const char* src)
+{
+    return (char*)memcpy(dst, src, strlen(src));
 }

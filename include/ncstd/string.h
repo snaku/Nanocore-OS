@@ -1,3 +1,6 @@
 #pragma once
 
-int strlen(const char* str);
+#include "ncstd/types.h"
+
+size_t strlen(const char* str);
+char* strcpy(char* dst, const char* src);

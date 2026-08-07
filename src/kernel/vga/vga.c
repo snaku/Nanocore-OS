@@ -1,5 +1,6 @@
 #include "kernel/vga/vga.h"
 #include "ncstd/string.h"
+#include "ncstd/types.h"
 
 #define VGA_COL_MAX  80
 #define VGA_LINE_MAX 25
@@ -11,7 +12,7 @@ typedef struct Vga
     int currLine;
 } Vga;
 
-static volatile unsigned short* sv_vgaAddr = (volatile unsigned short*)0xb8000;
+static volatile uint16_t* sv_vgaAddr = (volatile uint16_t*)0xb8000;
 
 static Vga s_vga;
 
@@ -27,7 +28,7 @@ static void vgaScroll()
 
     for (int i = 0; i < VGA_COL_MAX; i++)
     {
-        sv_vgaAddr[(VGA_LINE_MAX - 1) * VGA_COL_MAX + i] = ((unsigned short)VGA_COLOR_DEFAULT << 8) | ' ';
+        sv_vgaAddr[(VGA_LINE_MAX - 1) * VGA_COL_MAX + i] = ((uint16_t)VGA_COLOR_DEFAULT << 8) | ' ';
     }
 
     s_vga.cursor = (VGA_LINE_MAX - 1) * VGA_COL_MAX;
@@ -58,8 +59,8 @@ void vgaPuts(const char* str, int color)
         return;
     }
 
-    int len = strlen(str);
-    for (int i = 0; i < len; i++)
+    size_t len = strlen(str);
+    for (size_t i = 0; i < len; i++)
     {
         char c = str[i];
 
