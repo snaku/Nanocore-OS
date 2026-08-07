@@ -1,5 +1,6 @@
 #include "kernel/vga/vga.h"
 #include "ncstd/string.h"
+#include "ncstd/stdlib.h"
 #include "ncstd/types.h"
 
 #define VGA_COL_MAX  80
@@ -36,7 +37,7 @@ static void vgaScroll()
     s_vga.currLine = VGA_LINE_MAX - 1;
 }
 
-void vgaPutchar(char c, int color)
+void vgaPutc(char c, int color)
 {
     sv_vgaAddr[s_vga.cursor++] = (color << 8) | c;
 
@@ -77,15 +78,23 @@ void vgaPuts(const char* str, int color)
             continue;
         }
 
-        vgaPutchar(c, color);
+        vgaPutc(c, color);
     }
+}
+
+void vgaPuti(int val, int color)
+{
+    char buff[512];
+    itoa(val, buff);
+
+    vgaPuts(buff, color);
 }
 
 void vgaClear()
 {
     for (int i = 0; i < VGA_COL_MAX * VGA_LINE_MAX; i++)
     {
-        vgaPutchar(' ', VGA_COLOR_DEFAULT);
+        vgaPutc(' ', VGA_COLOR_DEFAULT);
     }
 
     s_vga.cursor = 0;

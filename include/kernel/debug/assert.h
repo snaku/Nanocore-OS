@@ -15,6 +15,8 @@
             vgaPuts(msg, VGA_COLOR_WHITE);                \
             vgaPuts(", ", VGA_COLOR_WHITE);               \
             vgaPuts(__FILE__, VGA_COLOR_GREEN);           \
+            vgaPuts(":", VGA_COLOR_GREEN);                \
+            vgaPuti(__LINE__, VGA_COLOR_GREEN);           \
             HANG();                                       \
         }                                                 \
     } while (0)
