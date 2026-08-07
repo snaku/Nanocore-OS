@@ -2,6 +2,7 @@
 
 enum VgaColor
 {
+    VGA_COLOR_RED = 0x04,
     VGA_COLOR_DEFAULT = 0x07,
     VGA_COLOR_GREEN = 0x0a,
     VGA_COLOR_WHITE = 0x0f,

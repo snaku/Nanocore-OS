@@ -1,5 +1,5 @@
-#include "ncstd/bool.h"
 #include "kernel/vga/vga.h"
+#include "kernel/cpu.h"
 #include "ncstd/string.h"
 
 void krnlMain()
@@ -16,8 +16,5 @@ void krnlMain()
         vgaPuts("Scroll test\n", VGA_COLOR_GREEN);
     }
 
-    while (true)
-    {
-        __asm__ volatile ("hlt");
-    }
+    HANG();
 }

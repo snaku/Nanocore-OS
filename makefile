@@ -3,6 +3,7 @@ LD = x86_64-elf-ld
 OBJCOPY = x86_64-elf-objcopy
 NASM = nasm
 
+# NCOS_DEBUG define is to test NCOS_ASSERT
 CFLAGS = -std=gnu11 \
 	-ffreestanding \
 	-fno-tree-loop-distribute-patterns \
@@ -17,7 +18,8 @@ CFLAGS = -std=gnu11 \
 	-mcmodel=small \
 	-Wall \
 	-Wextra \
-	-Iinclude
+	-Iinclude \
+	-DNCOS_DEBUG
 
 LDFLAGS = -T linker.ld \
 	-nostdlib \
