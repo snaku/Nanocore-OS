@@ -1,4 +1,4 @@
-#include "kernel/vga/vga.h"
+#include "drivers/vga/vga.h"
 #include "kernel/cpu.h"
 #include "ncstd/string.h"
 #include "ncstd/stdlib.h"

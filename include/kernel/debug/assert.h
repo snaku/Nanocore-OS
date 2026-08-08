@@ -3,7 +3,7 @@
 #ifdef NCOS_DEBUG
 
 #include "kernel/cpu.h"
-#include "kernel/vga/vga.h"
+#include "drivers/vga/vga.h"
 
 #define NCOS_ASSERT(condition, msg)                       \
     do                                                    \

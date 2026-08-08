@@ -1,6 +1,6 @@
 #include "kernel/interrupts/interrupts.h"
-#include "kernel/vga/vga.h"
 #include "kernel/cpu.h"
+#include "drivers/vga/vga.h"
 
 #define IDT_VECTOR_MAX 256
 

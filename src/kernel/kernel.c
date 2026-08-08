@@ -1,8 +1,8 @@
-#include "kernel/vga/vga.h"
 #include "kernel/interrupts/interrupts.h"
 #include "kernel/interrupts/pic.h"
 #include "kernel/debug/assert.h"
 #include "kernel/cpu.h"
+#include "drivers/vga/vga.h"
 #include "ncstd/string.h"
 #include "ncstd/memory.h"
 
