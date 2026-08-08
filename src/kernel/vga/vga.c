@@ -1,7 +1,6 @@
 #include "kernel/vga/vga.h"
 #include "ncstd/string.h"
 #include "ncstd/stdlib.h"
-#include "ncstd/types.h"
 
 #define VGA_COL_MAX  80
 #define VGA_LINE_MAX 25
@@ -85,8 +84,17 @@ void vgaPuts(const char* str, int color)
 void vgaPuti(int val, int color)
 {
     char buff[512];
-    itoa(val, buff);
+    itoa(val, buff, 10);
 
+    vgaPuts(buff, color);
+}
+
+void vgaPuthex(int64_t hex, int color)
+{
+    char buff[512];
+    itoa(hex, buff, 16);
+
+    vgaPuts("0x", color);
     vgaPuts(buff, color);
 }
 

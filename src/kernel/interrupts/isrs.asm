@@ -4,14 +4,9 @@ section .text
 
 extern isrHandler0
 
-isr0:
-    call pushRegs
-    call isrHandler0
-    call popRegs
-
-    iretq
-
-pushRegs:
+%macro pushRegs 0
+    push rax
+    push rbx
     push r15
     push r14
     push r13
@@ -27,9 +22,10 @@ pushRegs:
     push rcx
     push rbx
     push rax
-    ret
+%endmacro
 
-popRegs:
+%macro popRegs 0
+    popRegs:
     pop rax
     pop rbx
     pop rcx
@@ -45,4 +41,11 @@ popRegs:
     pop r13
     pop r14
     pop r15
-    ret
+%endmacro
+
+isr0:
+    pushRegs
+    call isrHandler0
+    popRegs
+
+    iretq

@@ -2,12 +2,24 @@
 #include "ncstd/memory.h"
 #include "ncstd/bool.h"
 
-char* itoa(int value, char* dst)
+char* itoa(int64_t value, char* dst, int base)
 {
-    static char table[10] =
+    static char table[16] =
     {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'a', 'b', 'c', 'd', 'e', 'f'
     };
+
+    if (base < 2 ||
+        base > 16)
+    {
+        return NULL;
+    }
+
+    if (dst == NULL)
+    {
+        return NULL;
+    }
 
     int i = 0;
     ncbool isNegative = false;
@@ -28,8 +40,8 @@ char* itoa(int value, char* dst)
 
     while (value > 0)
     {
-        dst[i++] = table[value % 10];
-        value /= 10;
+        dst[i++] = table[value % base];
+        value /= base;
     }
 
     if (isNegative)

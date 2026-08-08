@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ncstd/types.h"
+
 enum VgaColor
 {
     VGA_COLOR_RED = 0x04,
@@ -13,5 +15,6 @@ enum VgaColor
 void vgaPutc(char c, int color);
 void vgaPuts(const char* str, int color);
 void vgaPuti(int val, int color);
+void vgaPuthex(int64_t hex, int color);
 
 void vgaClear();
