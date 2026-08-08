@@ -31,11 +31,12 @@ BOOT1 = $(BUILD)/boot_1.bin
 BOOT2 = $(BUILD)/boot_2.bin
 
 ENTRY_OBJ = $(BUILD)/kernel/entry.o
+ISR_OBJS = $(BUILD)/kernel/interrupts/isrs.o
 
 C_SRCS = $(shell find src -type f -name '*.c')
 C_OBJS = $(patsubst src/%.c,$(BUILD)/%.o,$(C_SRCS))
 
-OBJS = $(C_OBJS)
+OBJS = $(C_OBJS) $(ISR_OBJS)
 
 KERNEL_ELF = $(BUILD)/kernel.elf
 KERNEL_BIN = $(BUILD)/kernel.bin
@@ -57,6 +58,12 @@ $(BOOT2): src/boot/boot_2.asm | $(BUILD)
 # kernel entry
 
 $(ENTRY_OBJ): src/kernel/entry.asm
+	mkdir -p $(dir $@)
+	$(NASM) -f elf64 $< -o $@
+
+# interrupts
+
+$(BUILD)/kernel/interrupts/isrs.o: src/kernel/interrupts/isrs.asm
 	mkdir -p $(dir $@)
 	$(NASM) -f elf64 $< -o $@
 
