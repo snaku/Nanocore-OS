@@ -1,4 +1,5 @@
 #include "kernel/vga/vga.h"
+#include "kernel/cpu.h"
 #include "ncstd/string.h"
 #include "ncstd/stdlib.h"
 
@@ -36,6 +37,17 @@ static void vgaScroll()
     s_vga.currLine = VGA_LINE_MAX - 1;
 }
 
+static void vgaUpdateCursor()
+{
+    uint16_t pos = s_vga.cursor;
+
+    OUTB(0x3d4, 0x0e);
+    OUTB(0x3d5, (pos >> 8) & 0xff);
+
+    OUTB(0x3d4, 0x0f);
+    OUTB(0x3d5, pos & 0xff);
+}
+
 void vgaPutc(char c, int color)
 {
     sv_vgaAddr[s_vga.cursor++] = (color << 8) | c;
@@ -50,6 +62,8 @@ void vgaPutc(char c, int color)
     {
         vgaScroll();
     }
+
+    vgaUpdateCursor();
 }
 
 void vgaPuts(const char* str, int color)

@@ -9,6 +9,12 @@
     while (true) \
         HLT();
 
+#define OUTB(port, val)   __asm__ volatile ("outb %b0, %w1" : : "a"(val), "Nd"(port))
+#define INB(port) ({uint8_t val; __asm__ volatile ("inb %w1, %b0" : "=a"(val) : "Nd"((port))); val;})
+
+#define STI() __asm__ volatile ("sti")
+#define CLI() __asm__ volatile ("cli")
+
 enum Register
 {
     REG_RAX,

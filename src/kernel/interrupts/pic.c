@@ -1,0 +1,11 @@
+#include "kernel/interrupts/pic.h"
+#include "kernel/cpu.h"
+
+void picInit()
+{
+    OUTB(0x20, 0x11);
+    OUTB(0x21, 0x20);
+    OUTB(0x21, 0x04);
+    OUTB(0x21, 0x01);
+    OUTB(0x21, 0xfd);
+}

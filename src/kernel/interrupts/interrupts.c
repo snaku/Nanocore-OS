@@ -29,18 +29,19 @@ Registers* g_regsISR; // registers values on interruption (points to RSP)
 #define LIDT(descr) __asm__ volatile ("lidt %0" : : "m"((descr)))
 
 extern void isr0();
+extern void isr33();
 
-static void idtSetHandler(uint8_t vec, void (*handler)())
+static void idtSetVecIsr(uint8_t vec, void (*isr)())
 {
-    uintptr_t handlerAddr = (uintptr_t)handler;
+    uintptr_t isrAddr = (uintptr_t)isr;
     IdtEntry64* entry = &s_idts[vec];
     
-    entry->offLow = handlerAddr & 0xffff;
+    entry->offLow = isrAddr & 0xffff;
     entry->selector = 0x18;
     entry->ist = 0;
     entry->typeAttr = 0x8e;
-    entry->offMid = (handlerAddr >> 16) & 0xffff;
-    entry->offHigh = (handlerAddr >> 32) & 0xffffffff;
+    entry->offMid = (isrAddr >> 16) & 0xffff;
+    entry->offHigh = (isrAddr >> 32) & 0xffffffff;
     entry->zero = 0;
 }
 
@@ -49,7 +50,8 @@ void idtInit()
     s_descriptor.base = (uintptr_t)s_idts;
     s_descriptor.limit = sizeof(s_idts) - 1;
 
-    idtSetHandler(0, isr0);
+    idtSetVecIsr(0x00, isr0);
+    idtSetVecIsr(0x21, isr33);
 
     LIDT(s_descriptor);
 }
@@ -71,4 +73,15 @@ void isrHandler0()
     }
 
     HANG();
+}
+
+// vector 33 (IRQ1)
+void isrHandler33()
+{
+    uint8_t scanecode = INB(0x60);
+
+    vgaPuthex(scanecode, VGA_COLOR_WHITE);
+    vgaPuts(" ", VGA_COLOR_DEFAULT);
+
+    OUTB(0x20, 0x20); // eoi
 }

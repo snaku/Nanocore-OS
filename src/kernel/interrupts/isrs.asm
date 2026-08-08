@@ -1,10 +1,12 @@
 global isr0
+global isr33
 
 section .text
 
 extern g_regsISR ; see kernel/interrupts/interrupts.c
 
 extern isrHandler0
+extern isrHandler33
 
 %macro pushRegs 0
     push r15
@@ -47,6 +49,15 @@ isr0:
 
     mov [g_regsISR], rsp
     call isrHandler0
+
+    popRegs
+
+    iretq
+
+isr33:
+    pushRegs
+
+    call isrHandler33
 
     popRegs
 
