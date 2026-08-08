@@ -1,6 +1,6 @@
 #include "ncstd/memory.h"
 
-void* memset(void* dst, uint64_t value, size_t size)
+void* memset(void* dst, uint8_t value, size_t size)
 {
     if (dst == NULL)
     {
@@ -17,10 +17,18 @@ void* memset(void* dst, uint64_t value, size_t size)
     if ((uintptr_t)dst8 % sizeof(uint64_t) == 0)
     {
         size_t size64 = size / sizeof(uint64_t);
+        uint64_t val64 = ((uint64_t)value << 56) |
+                         ((uint64_t)value << 48) |
+                         ((uint64_t)value << 40) |
+                         ((uint64_t)value << 32) |
+                         ((uint64_t)value << 24) |
+                         ((uint64_t)value << 16) |
+                         ((uint64_t)value << 8)  |
+                         (uint64_t)value;
 
         for (size_t i = 0; i < size64; i++)
         {
-            ((uint64_t*)dst8)[i] = value;
+            ((uint64_t*)dst8)[i] = val64;
         }
 
         dst8 += size64 * sizeof(uint64_t);

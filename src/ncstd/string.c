@@ -8,7 +8,7 @@ size_t strlen(const char* str)
         return 0;
     }
 
-    int len = 0;
+    size_t len = 0;
 
     while (*str++ != '\0')
     {
@@ -20,5 +20,5 @@ size_t strlen(const char* str)
 
 char* strcpy(char* dst, const char* src)
 {
-    return (char*)memcpy(dst, src, strlen(src));
+    return (char*)memcpy(dst, src, strlen(src) + 1);
 }

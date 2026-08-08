@@ -76,7 +76,7 @@ $(KERNEL_BIN): $(KERNEL_ELF)
 
 $(IMG): $(BOOT1) $(BOOT2) $(KERNEL_BIN)
 	cat $(BOOT1) $(BOOT2) $(KERNEL_BIN) > $@
-	truncate -s 1M $@
+## truncate -s 1M $@
 
 clean:
 	rm -rf $(BUILD)
