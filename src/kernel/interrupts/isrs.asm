@@ -2,11 +2,11 @@ global isr0
 
 section .text
 
+extern g_regsISR ; see kernel/interrupts/interrupts.c
+
 extern isrHandler0
 
 %macro pushRegs 0
-    push rax
-    push rbx
     push r15
     push r14
     push r13
@@ -25,7 +25,6 @@ extern isrHandler0
 %endmacro
 
 %macro popRegs 0
-    popRegs:
     pop rax
     pop rbx
     pop rcx
@@ -45,7 +44,10 @@ extern isrHandler0
 
 isr0:
     pushRegs
+
+    mov [g_regsISR], rsp
     call isrHandler0
+
     popRegs
 
     iretq

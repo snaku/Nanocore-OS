@@ -24,6 +24,8 @@ typedef struct __attribute__((packed)) IdtDescriptor
 static IdtEntry64 s_idts[IDT_VECTOR_MAX];
 static IdtDescriptor s_descriptor;
 
+Registers* g_regsISR; // registers values on interruption (points to RSP)
+
 #define LIDT(descr) __asm__ volatile ("lidt %0" : : "m"((descr)))
 
 extern void isr0();
@@ -52,10 +54,21 @@ void idtInit()
     LIDT(s_descriptor);
 }
 
+// vector 0 (#DE)
 void isrHandler0()
 {
     vgaClear();
-    vgaPuts("EXCEPTION: Divide error", VGA_COLOR_RED);
+    vgaPuts("EXCEPTION: Divide error\n\n", VGA_COLOR_RED);
+
+    for (int i = REG_RAX; i < REG_MAX; i++)
+    {
+        vgaPuts(cpuRegToStr(i), VGA_COLOR_GREEN);
+        vgaPuts(": ", VGA_COLOR_GREEN);
+
+        vgaPuthex(g_regsISR->vals[i], VGA_COLOR_WHITE);
+
+        vgaPuts("\n", VGA_COLOR_DEFAULT);
+    }
 
     HANG();
 }
