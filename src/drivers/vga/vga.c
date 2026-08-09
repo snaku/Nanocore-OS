@@ -88,6 +88,8 @@ void vgaPuts(const char* str, int color)
                 vgaScroll();
             }
 
+            vgaUpdateCursor();
+
             continue;
         }
 

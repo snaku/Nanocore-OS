@@ -1,6 +1,7 @@
 #include "kernel/interrupts/interrupts.h"
 #include "kernel/cpu.h"
 #include "drivers/vga/vga.h"
+#include "drivers/keyboard/keyboard.h"
 
 #define IDT_VECTOR_MAX 256
 
@@ -78,10 +79,13 @@ void isrHandler0()
 // vector 33 (IRQ1)
 void isrHandler33()
 {
-    uint8_t scanecode = INB(0x60);
+    kbClearKeys();
 
-    vgaPuthex(scanecode, VGA_COLOR_WHITE);
-    vgaPuts(" ", VGA_COLOR_DEFAULT);
+    while (INB(0x64) & 0x01)
+    {
+        uint8_t scancode = INB(0x60);
+        kbReadScancode(scancode);
+    } 
 
     OUTB(0x20, 0x20); // eoi
 }
