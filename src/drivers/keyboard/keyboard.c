@@ -158,7 +158,7 @@ uint8_t kbGetPressedKeyCount()
     return s_kb.pressedKeyCount;
 }
 
-ncbool knCheckUppercase()
+ncbool kbCheckUppercase()
 {
     return s_kb.capslock || s_kb.shift;
 }

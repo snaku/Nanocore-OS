@@ -68,4 +68,4 @@ void kbReadScancode(uint8_t scancode);
 void kbClearKeys();
 uint8_t* kbGetPressedKeys();
 uint8_t kbGetPressedKeyCount();
-ncbool knCheckUppercase();
+ncbool kbCheckUppercase();
