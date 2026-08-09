@@ -1,7 +1,9 @@
 #include "terminal/terminal.h"
+#include "terminal/shell.h"
 #include "drivers/vga/vga.h"
 #include "drivers/keyboard/keyboard.h"
 #include "ncstd/ctype.h"
+#include "ncstd/string.h"
 
 static char s_keyToChar[37] =
 {
@@ -24,6 +26,12 @@ enum TerminalMode
     TERMINAL_MODE_CMD
 };
 
+
+#define TERMINAL_CMDBUFF_MAX 128
+
+static char s_cmdBuff[TERMINAL_CMDBUFF_MAX];
+static uint32_t s_cmdBuffIdx;
+
 static uint8_t s_mode;
 
 static char terminalKeyToChar(uint8_t key)
@@ -37,15 +45,45 @@ static char terminalKeyToChar(uint8_t key)
     return s_keyToChar[key];
 }
 
+static inline void terminalWritePrompt()
+{
+    terminalWrite("ncOS> ");
+}
+
 static void terminalHandleEnter()
 {
+    terminalWrite("\n");
+
     switch (s_mode)
     {
-        case TERMINAL_MODE_FREE: terminalWrite("\n"); break;
+        case TERMINAL_MODE_FREE: break;
         case TERMINAL_MODE_CMD:
-            // TODO
+            if (strlen(s_cmdBuff) == 0)
+            {
+                terminalWrite("No command specified.\n");
+                terminalWritePrompt();
+                return;
+            }
+
+            shellTryExecute(s_cmdBuff);
+
+            s_cmdBuffIdx = 0;
+            s_cmdBuff[0] = '\0';
+
+            terminalWritePrompt();
             return;
     }
+}
+
+static void terminalAddToCmdBuff(char c)
+{
+    if (s_cmdBuffIdx >= TERMINAL_CMDBUFF_MAX - 1) // - 1 for '\0'
+    {
+        return;
+    }
+
+    s_cmdBuff[s_cmdBuffIdx++] = c;
+    s_cmdBuff[s_cmdBuffIdx] = '\0';
 }
 
 static void terminalHandleSpecialKey(uint8_t key)
@@ -53,10 +91,25 @@ static void terminalHandleSpecialKey(uint8_t key)
     switch (key)
     {
         case KEY_ENTER: terminalHandleEnter(); break;
-        case KEY_SPACE: terminalWrite(" ");    break;
+
+        case KEY_SPACE:
+            if (s_mode == TERMINAL_MODE_CMD)
+            {
+                terminalAddToCmdBuff(' ');
+            }
+
+            terminalWrite(" ");
+            break;
+
         case KEY_TAB:
             s_mode ^= TERMINAL_MODE_CMD;
-            terminalWrite("\nCHANGING MODE...\n\n");
+
+            terminalClear();
+
+            if (s_mode == TERMINAL_MODE_CMD)
+            {
+                terminalWritePrompt();
+            }
             break;
     }
 }
@@ -75,6 +128,11 @@ static void terminalHandleKey(uint8_t key)
             character[0] = toupper(character[0]);
         }
 
+        if (s_mode == TERMINAL_MODE_CMD)
+        {
+            terminalAddToCmdBuff(character[0]);
+        }
+
         terminalWrite(character);
     }
     else
@@ -86,8 +144,10 @@ static void terminalHandleKey(uint8_t key)
 void terminalInit()
 {
     terminalClear();
-
     terminalWrite("Press TAB to change mode.\n");
+
+    s_mode = TERMINAL_MODE_CMD;
+    terminalWritePrompt();
 }
 
 void terminalHandleInput()

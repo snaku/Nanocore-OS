@@ -118,7 +118,7 @@ void vgaClear()
 {
     for (int i = 0; i < VGA_COL_MAX * VGA_LINE_MAX; i++)
     {
-        vgaPutc(' ', VGA_COLOR_DEFAULT);
+        sv_vgaAddr[i] = (VGA_COLOR_DEFAULT << 8) | ' ';
     }
 
     s_vga.cursor = 0;

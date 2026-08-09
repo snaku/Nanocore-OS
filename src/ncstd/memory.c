@@ -1,6 +1,6 @@
 #include "ncstd/memory.h"
 
-void* memset(void* dst, uint8_t value, size_t size)
+void* memset(void* dst, int value, size_t size)
 {
     if (dst == NULL)
     {
@@ -13,18 +13,19 @@ void* memset(void* dst, uint8_t value, size_t size)
     }
 
     uint8_t* dst8 = (uint8_t*)dst;
+    uint8_t val8 = (uint8_t)value;
 
     if ((uintptr_t)dst8 % sizeof(uint64_t) == 0)
     {
         size_t size64 = size / sizeof(uint64_t);
-        uint64_t val64 = ((uint64_t)value << 56) |
-                         ((uint64_t)value << 48) |
-                         ((uint64_t)value << 40) |
-                         ((uint64_t)value << 32) |
-                         ((uint64_t)value << 24) |
-                         ((uint64_t)value << 16) |
-                         ((uint64_t)value << 8)  |
-                         (uint64_t)value;
+        uint64_t val64 = ((uint64_t)val8 << 56) |
+                         ((uint64_t)val8 << 48) |
+                         ((uint64_t)val8 << 40) |
+                         ((uint64_t)val8 << 32) |
+                         ((uint64_t)val8 << 24) |
+                         ((uint64_t)val8 << 16) |
+                         ((uint64_t)val8 << 8)  |
+                         (uint64_t)val8;
 
         for (size_t i = 0; i < size64; i++)
         {
@@ -37,7 +38,7 @@ void* memset(void* dst, uint8_t value, size_t size)
 
     while (size-- != 0)
     {
-        *dst8++ = (uint8_t)value;
+        *dst8++ = val8;
     }
 
     return dst;
