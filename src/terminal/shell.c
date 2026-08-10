@@ -40,7 +40,7 @@ static const ShellCmd s_cmds[CMD_MAX] =
     {"help", "Print the command list.\n", shellExecuteHelp},
     {"echo", "Print a string to the terminal.\n", shellExecuteEcho},
     {"clear", "Clear the terminal.\n", shellExecuteClear},
-    {"dump", "Dump registers or memory.\n", shellExecuteDump}
+    {"dump", "Dump registers or 16 bytes starting at a memory address.\n", shellExecuteDump}
 };
 
 static void shellExecute(uint32_t cmdId, const char* args)
@@ -165,7 +165,7 @@ static ncbool shellExecuteDump(const char* args)
         {
             terminalWrite(cpuRegToStr(i));
             terminalWrite(": ");
-            terminalWriteHex(regs->vals[i]);
+            terminalWriteHex(regs->vals[i], TERMINAL_HEX_PREFIX);
             terminalWrite("\n");
         }
     }
@@ -182,7 +182,12 @@ static ncbool shellExecuteDump(const char* args)
 
         // TODO: check if the address is valid
 
-        terminalWriteHex(*(uint32_t*)addr); // i don't care
+        uint8_t* ptr = (uint8_t*)addr;
+        for (uint32_t i = 0; i < 16; i++)
+        {
+            terminalWriteHex(*ptr++, TERMINAL_HEX_NOPREFIX); // i don't care
+            terminalWrite(" ");
+        }
     }
 
     terminalWrite("\n");

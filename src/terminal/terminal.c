@@ -75,6 +75,26 @@ static void terminalHandleEnter()
     }
 }
 
+static void terminalBackspace()
+{
+    vgaBackspace();
+}
+
+static void terminalHandleBackspace()
+{
+    if (s_mode == TERMINAL_MODE_CMD)
+    {
+        if (s_cmdBuffIdx == 0)
+        {
+            return;
+        }
+
+        s_cmdBuff[s_cmdBuffIdx--] = '\0';
+    }
+
+    terminalBackspace();
+}
+
 static void terminalAddToCmdBuff(char c)
 {
     if (s_cmdBuffIdx >= TERMINAL_CMDBUFF_MAX - 1) // - 1 for '\0'
@@ -91,6 +111,7 @@ static void terminalHandleSpecialKey(uint8_t key)
     switch (key)
     {
         case KEY_ENTER: terminalHandleEnter(); break;
+        case KEY_BACKSPACE: terminalHandleBackspace(); break;
 
         case KEY_SPACE:
             if (s_mode == TERMINAL_MODE_CMD)
@@ -166,9 +187,9 @@ void terminalWrite(const char* str)
     vgaPuts(str, VGA_COLOR_WHITE);
 }
 
-void terminalWriteHex(int64_t hex)
+void terminalWriteHex(int64_t hex, uint8_t prefix)
 {
-    vgaPuthex(hex, VGA_COLOR_WHITE);
+    vgaPuthex(hex, VGA_COLOR_WHITE, prefix == TERMINAL_HEX_PREFIX);
 }
 
 void terminalClear()

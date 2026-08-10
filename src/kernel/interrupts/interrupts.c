@@ -68,7 +68,7 @@ void isrHandler0()
         vgaPuts(cpuRegToStr(i), VGA_COLOR_GREEN);
         vgaPuts(": ", VGA_COLOR_GREEN);
 
-        vgaPuthex(g_regsISR->vals[i], VGA_COLOR_WHITE);
+        vgaPuthex(g_regsISR->vals[i], VGA_COLOR_WHITE, true);
 
         vgaPuts("\n", VGA_COLOR_DEFAULT);
     }

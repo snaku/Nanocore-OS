@@ -105,12 +105,16 @@ void vgaPuti(int val, int color)
     vgaPuts(buff, color);
 }
 
-void vgaPuthex(int64_t hex, int color)
+void vgaPuthex(int64_t hex, int color, ncbool usePrefix)
 {
     char buff[512];
     itoa(hex, buff, 16);
 
-    vgaPuts("0x", color);
+    if (usePrefix)
+    {
+        vgaPuts("0x", color);
+    }
+
     vgaPuts(buff, color);
 }
 
@@ -124,4 +128,26 @@ void vgaClear()
     s_vga.cursor = 0;
     s_vga.currCol = 0;
     s_vga.currLine = 0;
+}
+
+void vgaBackspace()
+{
+    if (s_vga.cursor == 0)
+    {
+        return;
+    }
+
+    sv_vgaAddr[--s_vga.cursor] = (VGA_COLOR_DEFAULT << 8) | ' ';
+
+    if (s_vga.currCol == 0)
+    {
+        s_vga.currCol = VGA_COL_MAX - 1;
+        s_vga.currLine--;
+    }
+    else
+    {
+        s_vga.currCol--;
+    }
+
+    vgaUpdateCursor();
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ncstd/types.h"
+#include "ncstd/bool.h"
 
 enum VgaColor
 {
@@ -15,6 +16,6 @@ enum VgaColor
 void vgaPutc(char c, int color);
 void vgaPuts(const char* str, int color);
 void vgaPuti(int val, int color);
-void vgaPuthex(int64_t hex, int color);
-
+void vgaPuthex(int64_t hex, int color, ncbool usePrefix);
 void vgaClear();
+void vgaBackspace();
