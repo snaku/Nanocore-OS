@@ -41,4 +41,6 @@ typedef struct Registers
     uint64_t vals[REG_MAX];
 } Registers;
 
+extern const Registers* cpuGetRegs(); // see kernel/cpu.asm
+
 const char* cpuRegToStr(int reg);

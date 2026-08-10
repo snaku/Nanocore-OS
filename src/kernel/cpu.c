@@ -1,5 +1,7 @@
 #include "kernel/cpu.h"
 
+Registers g_regs;
+
 const char* cpuRegToStr(int reg)
 {
     switch (reg)

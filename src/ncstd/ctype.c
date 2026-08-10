@@ -15,6 +15,19 @@ ncbool isupper(char c)
     return c >= 'A' && c <= 'Z';
 }
 
+ncbool isspace(char c)
+{
+    return c == ' ' ||
+           c == '\t' ||
+           c == '\n' ||
+           c == '\r';
+}
+
+ncbool isdigit(char c)
+{
+    return c >= '0' && c <= '9';
+}
+
 char toupper(char c)
 {
     if (!isalpha(c) &&

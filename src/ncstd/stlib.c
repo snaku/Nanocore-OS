@@ -1,6 +1,7 @@
 #include "ncstd/stdlib.h"
 #include "ncstd/memory.h"
 #include "ncstd/bool.h"
+#include "ncstd/ctype.h"
 
 char* itoa(int64_t value, char* dst, int base)
 {
@@ -65,4 +66,86 @@ char* itoa(int64_t value, char* dst, int base)
     }
 
     return dst;
+}
+
+uint64_t strtoull(const char* str, char** endPtr, int base)
+{
+    if (str == NULL)
+    {
+        if (endPtr != NULL)
+        {
+            *endPtr = (char*)str;
+        }
+
+        return 0;
+    }
+
+    if (base < 2 ||
+        base > 16)
+    {
+        if (endPtr != NULL)
+        {
+            *endPtr = (char*)str;
+        }
+
+        return 0;
+    }
+
+    while (isspace(*str))
+    {
+        str++;
+    }
+
+    if (base == 16 &&
+        str[0] == '0' &&
+        (str[1] == 'x' || str[1] == 'X'))
+    {
+        str += 2;
+    }
+
+    const char* digitsStart = str;
+    uint64_t val = 0;
+
+    while (*str != '\0')
+    {
+        char c = *str;
+        int digit;
+
+        if (isdigit(c))
+        {
+            digit = c - '0';
+        }
+        else if (c >= 'a' && c <= 'f')
+        {
+            digit = c - 'a' + 10;
+        }
+        else if (c >= 'A' && c <= 'F')
+        {
+            digit = c - 'A' + 10;
+        }
+        else
+        {
+            break;
+        }
+
+        if (digit >= base)
+        {
+            break;
+        }
+
+        val = val * base + digit;
+        str++;
+    }
+
+    if (endPtr != NULL)
+    {
+        *endPtr = (char*)str;
+    }
+
+    if (str == digitsStart)
+    {
+        return 0;
+    }
+
+    return val;
 }

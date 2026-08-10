@@ -32,11 +32,12 @@ BOOT2 = $(BUILD)/boot_2.bin
 
 ENTRY_OBJ = $(BUILD)/kernel/entry.o
 ISR_OBJS = $(BUILD)/kernel/interrupts/isrs.o
+CPU_OBJS = $(BUILD)/kernel/cpu_asm.o
 
 C_SRCS = $(shell find src -type f -name '*.c')
 C_OBJS = $(patsubst src/%.c,$(BUILD)/%.o,$(C_SRCS))
 
-OBJS = $(C_OBJS) $(ISR_OBJS)
+OBJS = $(C_OBJS) $(ISR_OBJS) $(CPU_OBJS)
 
 KERNEL_ELF = $(BUILD)/kernel.elf
 KERNEL_BIN = $(BUILD)/kernel.bin
@@ -64,6 +65,12 @@ $(ENTRY_OBJ): src/kernel/entry.asm
 # interrupts
 
 $(BUILD)/kernel/interrupts/isrs.o: src/kernel/interrupts/isrs.asm
+	mkdir -p $(dir $@)
+	$(NASM) -f elf64 $< -o $@
+
+# cpu (asm)
+
+$(BUILD)/kernel/cpu_asm.o: src/kernel/cpu.asm
 	mkdir -p $(dir $@)
 	$(NASM) -f elf64 $< -o $@
 

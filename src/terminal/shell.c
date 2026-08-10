@@ -1,9 +1,11 @@
 #include "terminal/shell.h"
 #include "terminal/terminal.h"
 #include "kernel/debug/assert.h"
+#include "kernel/cpu.h"
 #include "ncstd/string.h"
 #include "ncstd/memory.h"
 #include "ncstd/bool.h"
+#include "ncstd/stdlib.h"
 
 enum Cmd
 {
@@ -12,6 +14,7 @@ enum Cmd
     CMD_HELP,
     CMD_ECHO,
     CMD_CLEAR,
+    CMD_DUMP,
 
     CMD_MAX
 };
@@ -28,6 +31,7 @@ typedef struct ShellCmd
 static ncbool shellExecuteHelp(const char* args);
 static ncbool shellExecuteEcho(const char* args);
 static ncbool shellExecuteClear(const char* args);
+static ncbool shellExecuteDump(const char* args);
 
 static const ShellCmd s_cmds[CMD_MAX] =
 {
@@ -35,7 +39,8 @@ static const ShellCmd s_cmds[CMD_MAX] =
 
     {"help", "Print the command list.\n", shellExecuteHelp},
     {"echo", "Print a string to the terminal.\n", shellExecuteEcho},
-    {"clear", "Clear the terminal.\n", shellExecuteClear}
+    {"clear", "Clear the terminal.\n", shellExecuteClear},
+    {"dump", "Dump registers or memory.\n", shellExecuteDump}
 };
 
 static void shellExecute(uint32_t cmdId, const char* args)
@@ -55,14 +60,14 @@ static void shellExecute(uint32_t cmdId, const char* args)
 
 void shellTryExecute(const char* cmdStr)
 {
-    uint32_t foundCmd = CMD_NONE;
-
     const char* cmdEnd = cmdStr;
     while (*cmdEnd != '\0' &&
            *cmdEnd != ' ')
     {
         cmdEnd++;
     }
+
+    uint32_t foundCmd = CMD_NONE;
 
     for (uint32_t i = CMD_HELP; i < CMD_MAX; i++)
     {
@@ -129,7 +134,7 @@ static ncbool shellExecuteEcho(const char* args)
     }
 
     terminalWrite(args);
-    terminalWrite("\n\n");
+    terminalWrite("\n");
 
     return true;
 }
@@ -142,6 +147,45 @@ static ncbool shellExecuteClear(const char* args)
     }
 
     terminalClear();
+
+    return true;
+}
+
+static ncbool shellExecuteDump(const char* args)
+{
+    if (args == NULL)
+    {
+        return false;
+    }
+
+    if (strcmp(args, "regs") == 0)
+    {
+        const Registers* regs = cpuGetRegs();
+        for (uint8_t i = REG_RAX; i < REG_MAX; i++)
+        {
+            terminalWrite(cpuRegToStr(i));
+            terminalWrite(": ");
+            terminalWriteHex(regs->vals[i]);
+            terminalWrite("\n");
+        }
+    }
+    else
+    {
+        char* end;
+        uint64_t addr = strtoull(args, &end, 16);
+        if (addr == 0 ||
+            end == args ||
+            *end != '\0')
+        {
+            return false;
+        }
+
+        // TODO: check if the address is valid
+
+        terminalWriteHex(*(uint32_t*)addr); // i don't care
+    }
+
+    terminalWrite("\n");
 
     return true;
 }

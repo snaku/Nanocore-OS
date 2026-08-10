@@ -166,6 +166,11 @@ void terminalWrite(const char* str)
     vgaPuts(str, VGA_COLOR_WHITE);
 }
 
+void terminalWriteHex(int64_t hex)
+{
+    vgaPuthex(hex, VGA_COLOR_WHITE);
+}
+
 void terminalClear()
 {
     vgaClear();
