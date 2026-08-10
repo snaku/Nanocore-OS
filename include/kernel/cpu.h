@@ -15,6 +15,16 @@
 #define STI() __asm__ volatile ("sti")
 #define CLI() __asm__ volatile ("cli")
 
+#define CPUID(leaf, eax, ebx, ecx, edx) \
+    asm volatile (                      \
+        "cpuid"                         \
+        : "=a"(eax),                    \
+          "=b"(ebx),                    \
+          "=c"(ecx),                    \
+          "=d"(edx)                     \
+        : "a"(leaf),                    \
+          "c"(0))
+
 enum Register
 {
     REG_RAX,
@@ -41,6 +51,13 @@ typedef struct Registers
     uint64_t vals[REG_MAX];
 } Registers;
 
+typedef struct CpuInfo
+{
+    char vendor[13];
+    char name[49];
+} CpuInfo;
+
 extern const Registers* cpuGetRegs(); // see kernel/cpu.asm
 
 const char* cpuRegToStr(int reg);
+const CpuInfo* cpuGetInfo();

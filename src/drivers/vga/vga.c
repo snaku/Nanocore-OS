@@ -128,6 +128,8 @@ void vgaClear()
     s_vga.cursor = 0;
     s_vga.currCol = 0;
     s_vga.currLine = 0;
+
+    vgaUpdateCursor();
 }
 
 void vgaBackspace()

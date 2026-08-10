@@ -15,6 +15,7 @@ enum Cmd
     CMD_ECHO,
     CMD_CLEAR,
     CMD_DUMP,
+    CMD_INFO,
 
     CMD_MAX
 };
@@ -32,6 +33,7 @@ static ncbool shellExecuteHelp(const char* args);
 static ncbool shellExecuteEcho(const char* args);
 static ncbool shellExecuteClear(const char* args);
 static ncbool shellExecuteDump(const char* args);
+static ncbool shellExecuteInfo(const char* args);
 
 static const ShellCmd s_cmds[CMD_MAX] =
 {
@@ -40,7 +42,8 @@ static const ShellCmd s_cmds[CMD_MAX] =
     {"help", "Print the command list.\n", shellExecuteHelp},
     {"echo", "Print a string to the terminal.\n", shellExecuteEcho},
     {"clear", "Clear the terminal.\n", shellExecuteClear},
-    {"dump", "Dump registers or 16 bytes starting at a memory address.\n", shellExecuteDump}
+    {"dump", "Dump registers or 16 bytes starting at a memory address.\n", shellExecuteDump},
+    {"info", "Print info of the system.\n", shellExecuteInfo}
 };
 
 static void shellExecute(uint32_t cmdId, const char* args)
@@ -189,6 +192,28 @@ static ncbool shellExecuteDump(const char* args)
             terminalWrite(" ");
         }
     }
+
+    terminalWrite("\n");
+
+    return true;
+}
+
+static ncbool shellExecuteInfo(const char* args)
+{
+    if (args != NULL)
+    {
+        return false;
+    }
+
+    const CpuInfo* cpuInfo = cpuGetInfo();
+
+    terminalWrite("CPU Vendor: ");
+    terminalWrite(cpuInfo->vendor);
+
+    terminalWrite("\n");
+
+    terminalWrite("CPU: ");
+    terminalWrite(cpuInfo->name);
 
     terminalWrite("\n");
 

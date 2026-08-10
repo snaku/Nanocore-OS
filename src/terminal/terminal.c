@@ -89,7 +89,7 @@ static void terminalHandleBackspace()
             return;
         }
 
-        s_cmdBuff[s_cmdBuffIdx--] = '\0';
+        s_cmdBuff[--s_cmdBuffIdx] = '\0';
     }
 
     terminalBackspace();
