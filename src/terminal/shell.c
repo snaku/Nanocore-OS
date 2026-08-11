@@ -2,6 +2,7 @@
 #include "terminal/terminal.h"
 #include "kernel/debug/assert.h"
 #include "kernel/cpu.h"
+#include "ncos/info.h"
 #include "ncstd/string.h"
 #include "ncstd/memory.h"
 #include "ncstd/bool.h"
@@ -129,9 +130,14 @@ static ncbool shellExecuteHelp(const char* args)
     return true;
 }
 
+static inline ncbool shellHasArgs(const char* args)
+{
+    return args != NULL;
+}
+
 static ncbool shellExecuteEcho(const char* args)
 {
-    if (args == NULL)
+    if (!shellHasArgs(args))
     {
         return false;
     }
@@ -144,7 +150,7 @@ static ncbool shellExecuteEcho(const char* args)
 
 static ncbool shellExecuteClear(const char* args)
 {
-    if (args != NULL)
+    if (shellHasArgs(args))
     {
         return false;
     }
@@ -154,43 +160,58 @@ static ncbool shellExecuteClear(const char* args)
     return true;
 }
 
+static ncbool shellDumpRegs()
+{
+    const Registers* regs = cpuGetRegs();
+    for (uint8_t i = REG_RAX; i < REG_MAX; i++)
+    {
+        terminalWrite(cpuRegToStr(i));
+        terminalWrite(": ");
+        terminalWriteHex(regs->vals[i], TERMINAL_HEX_PREFIX);
+        terminalWrite("\n");
+    }
+
+    return true;
+}
+
+static ncbool shellDumpMemory(const char* args)
+{
+    char* end;
+    uint64_t addr = strtoull(args, &end, 16);
+    if (addr == 0 ||
+        end == args ||
+        *end != '\0')
+    {
+        return false;
+    }
+
+    // TODO: check if the address is valid
+
+    uint8_t* ptr = (uint8_t*)addr;
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        terminalWriteHex(*ptr++, TERMINAL_HEX_NOPREFIX); // i don't care
+        terminalWrite(" ");
+    }
+
+    return true;
+}
+
 static ncbool shellExecuteDump(const char* args)
 {
-    if (args == NULL)
+    if (!shellHasArgs(args))
     {
         return false;
     }
 
     if (strcmp(args, "regs") == 0)
     {
-        const Registers* regs = cpuGetRegs();
-        for (uint8_t i = REG_RAX; i < REG_MAX; i++)
-        {
-            terminalWrite(cpuRegToStr(i));
-            terminalWrite(": ");
-            terminalWriteHex(regs->vals[i], TERMINAL_HEX_PREFIX);
-            terminalWrite("\n");
-        }
+        return shellDumpRegs();
     }
-    else
+
+    if (!shellDumpMemory(args))
     {
-        char* end;
-        uint64_t addr = strtoull(args, &end, 16);
-        if (addr == 0 ||
-            end == args ||
-            *end != '\0')
-        {
-            return false;
-        }
-
-        // TODO: check if the address is valid
-
-        uint8_t* ptr = (uint8_t*)addr;
-        for (uint32_t i = 0; i < 16; i++)
-        {
-            terminalWriteHex(*ptr++, TERMINAL_HEX_NOPREFIX); // i don't care
-            terminalWrite(" ");
-        }
+        return false;
     }
 
     terminalWrite("\n");
@@ -200,21 +221,30 @@ static ncbool shellExecuteDump(const char* args)
 
 static ncbool shellExecuteInfo(const char* args)
 {
-    if (args != NULL)
+    if (shellHasArgs(args))
     {
         return false;
     }
 
-    const CpuInfo* cpuInfo = cpuGetInfo();
+    const NcosInfo* ncosInfo = ncosGetInfo();
 
-    terminalWrite("CPU Vendor: ");
-    terminalWrite(cpuInfo->vendor);
-
+    terminalWrite(ncosInfo->name);
+    terminalWrite(" ");
+    terminalWrite(ncosInfo->version);
     terminalWrite("\n");
+
+    terminalWrite("Architecture: ");
+    terminalWrite(ncosInfo->arch);
+    terminalWrite("\n");
+
+    const CpuInfo* cpuInfo = cpuGetInfo();
 
     terminalWrite("CPU: ");
     terminalWrite(cpuInfo->name);
+    terminalWrite("\n");
 
+    terminalWrite("CPU Vendor: ");
+    terminalWrite(cpuInfo->vendor);
     terminalWrite("\n");
 
     return true;
