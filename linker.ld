@@ -33,4 +33,6 @@ SECTIONS
     {
         *(.eh_frame*)
     }
+
+    _heapStart = .;
 }
