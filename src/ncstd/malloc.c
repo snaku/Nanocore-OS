@@ -3,7 +3,7 @@
 
 void* malloc(size_t size)
 {
-    krnlMalloc(size);
+    return krnlMalloc(size);
 }
 
 void free(void* memory)
