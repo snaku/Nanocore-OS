@@ -25,8 +25,12 @@ SECTIONS
 
     .bss ALIGN(4K) : AT(KERNEL_LMA + (ADDR(.bss) - KERNEL_VMA))
     {
+        _bssStart = .;
+
         *(COMMON)
         *(.bss*)
+
+        _bssEnd = .;
     }
 
     .eh_frame ALIGN(4K) : AT(KERNEL_LMA + (ADDR(.eh_frame) - KERNEL_VMA))
