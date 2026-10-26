@@ -57,7 +57,7 @@ protectedMode:
 
     mov esi, 0x10000
     mov edi, 0x100000
-    mov ecx, (26 * 512) / 4
+    mov ecx, (64 * 512) / 4
     cld
     rep movsd
 
@@ -166,7 +166,7 @@ align 4
 dapPacket:
     db 0x10
     db 0x00
-    dw 0x1a
+    dw 0x30
     dw 0x0000
     dw 0x1000
     dq 0x1a

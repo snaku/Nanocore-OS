@@ -7,6 +7,7 @@
 #include "ncstd/memory.h"
 #include "ncstd/bool.h"
 #include "ncstd/stdlib.h"
+#include "ncstd/ctype.h"
 
 enum Cmd
 {
@@ -40,11 +41,11 @@ static const ShellCmd s_cmds[CMD_MAX] =
 {
     {"", "", NULL},
 
-    {"help", "Print the command list.\n", shellExecuteHelp},
-    {"echo", "Print a string to the terminal.\n", shellExecuteEcho},
-    {"clear", "Clear the terminal.\n", shellExecuteClear},
-    {"dump", "Dump registers or 16 bytes starting at a memory address.\n", shellExecuteDump},
-    {"info", "Print info of the system.\n", shellExecuteInfo}
+    {"help", "Print the command list.", shellExecuteHelp},
+    {"echo", "Print a string to the terminal.", shellExecuteEcho},
+    {"clear", "Clear the terminal.", shellExecuteClear},
+    {"dump", "Dump registers or 16 bytes starting at a memory address.", shellExecuteDump},
+    {"info", "Print info of the system.", shellExecuteInfo}
 };
 
 static void shellExecute(uint32_t cmdId, const char* args)
@@ -58,12 +59,17 @@ static void shellExecute(uint32_t cmdId, const char* args)
     {
         terminalWrite("Error while trying to execute command: '");
         terminalWrite(s_cmds[cmdId].name);
-        terminalWrite("' \n");
+        terminalWrite("'\n");
     }
 }
 
 void shellTryExecute(const char* cmdStr)
 {
+    while (isspace(*cmdStr))
+    {
+        cmdStr++;
+    }
+
     const char* cmdEnd = cmdStr;
     while (*cmdEnd != '\0' &&
            *cmdEnd != ' ')
@@ -110,9 +116,14 @@ void shellTryExecute(const char* cmdStr)
     shellExecute(foundCmd, args);
 }
 
+static inline ncbool shellHasArgs(const char* args)
+{
+    return args != NULL;
+}
+
 static ncbool shellExecuteHelp(const char* args)
 {
-    if (args != NULL) // help cmd doesn't take any arguments
+    if (shellHasArgs(args))
     {
         return false;
     }
@@ -124,15 +135,11 @@ static ncbool shellExecuteHelp(const char* args)
         terminalWrite("'");
         terminalWrite(s_cmds[i].name);
         terminalWrite("': ");
-        terminalWrite(s_cmds[i].descr); // descr already has '\n'
+        terminalWrite(s_cmds[i].descr);
+        terminalWrite("\n");
     }
 
     return true;
-}
-
-static inline ncbool shellHasArgs(const char* args)
-{
-    return args != NULL;
 }
 
 static ncbool shellExecuteEcho(const char* args)
