@@ -68,6 +68,7 @@ void* krnlMalloc(size_t size)
             prevBlock->next = block;
             block->prev = prevBlock;
             block->next = NULL;
+            block->size = size;
         }
         else
         {

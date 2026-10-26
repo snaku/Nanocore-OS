@@ -50,6 +50,12 @@ static inline void terminalWritePrompt()
     terminalWrite("ncOS> ");
 }
 
+static inline void terminalCmdBuffClear()
+{
+    s_cmdBuffIdx = 0;
+    s_cmdBuff[0] = '\0';
+}
+
 static void terminalHandleEnter()
 {
     terminalWrite("\n");
@@ -58,7 +64,7 @@ static void terminalHandleEnter()
     {
         case TERMINAL_MODE_FREE: break;
         case TERMINAL_MODE_CMD:
-            if (strlen(s_cmdBuff) == 0)
+            if (s_cmdBuffIdx == 0)
             {
                 terminalWrite("No command specified.\n");
                 terminalWritePrompt();
@@ -67,8 +73,7 @@ static void terminalHandleEnter()
 
             shellTryExecute(s_cmdBuff);
 
-            s_cmdBuffIdx = 0;
-            s_cmdBuff[0] = '\0';
+            terminalCmdBuffClear();
 
             terminalWritePrompt();
             return;
@@ -194,5 +199,6 @@ void terminalWriteHex(int64_t hex, uint8_t prefix)
 
 void terminalClear()
 {
+    terminalCmdBuffClear();
     vgaClear();
 }
