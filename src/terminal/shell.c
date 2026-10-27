@@ -17,6 +17,7 @@ enum Cmd
     CMD_ECHO,
     CMD_CLEAR,
     CMD_DUMP,
+    CMD_POKE,
     CMD_INFO,
     CMD_REBOOT,
 
@@ -36,6 +37,7 @@ static ncbool shellExecuteHelp(const char* args);
 static ncbool shellExecuteEcho(const char* args);
 static ncbool shellExecuteClear(const char* args);
 static ncbool shellExecuteDump(const char* args);
+static ncbool shellExecutePoke(const char* args);
 static ncbool shellExecuteInfo(const char* args);
 static ncbool shellExecuteReboot(const char* args);
 
@@ -47,6 +49,7 @@ static const ShellCmd s_cmds[CMD_MAX] =
     {"echo", "Print a string to the terminal.", shellExecuteEcho},
     {"clear", "Clear the terminal.", shellExecuteClear},
     {"dump", "Dump registers or 1 to 256 bytes starting at a memory address.", shellExecuteDump},
+    {"poke", "Write a byte at a memory address.", shellExecutePoke},
     {"info", "Print info of the system.", shellExecuteInfo},
     {"reboot", "Reboot the system.", shellExecuteReboot}
 };
@@ -310,6 +313,48 @@ static ncbool shellExecuteDump(const char* args)
     }
 
     terminalWrite("\n");
+
+    return true;
+}
+
+static ncbool shellExecutePoke(const char* args)
+{
+    if (!shellHasArgs(args))
+    {
+        return false;
+    }
+
+    char addrBuff[17];
+    if (!shellFindArg(args, 0, addrBuff, sizeof(addrBuff)))
+    {
+        return false;
+    }
+
+    // TODO: check if the address is valid
+    uint64_t addr = strtoull(addrBuff, NULL, 16);
+    if (addr == 0)
+    {
+        return false;
+    }
+
+    char valBuff[17];
+    if (!shellFindArg(args, 1, valBuff, sizeof(valBuff)))
+    {
+        return false;
+    }
+
+    uint64_t val = strtoull(valBuff, NULL, 16);
+    if (val > 0xff)
+    {
+        return false;
+    }
+
+    uint8_t* ptr = (uint8_t*)addr;
+    uint8_t oldVal = *ptr;
+
+    *ptr = val;
+
+    terminalWriteFmt("%x: Old value -> %x || New value -> %x\n", addr, oldVal, val);
 
     return true;
 }
