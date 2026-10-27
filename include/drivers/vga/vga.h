@@ -2,6 +2,7 @@
 
 #include "ncstd/types.h"
 #include "ncstd/bool.h"
+#include "ncstd/stdarg.h"
 
 enum VgaColor
 {
@@ -17,5 +18,8 @@ void vgaPutc(char c, int color);
 void vgaPuts(const char* str, int color);
 void vgaPuti(int val, int color);
 void vgaPuthex(int64_t hex, int color, ncbool usePrefix);
+void vgaPutFmtV(int color, const char* fmt, va_list args);
+void vgaPutFmt(int color, const char* fmt, ...);
+
 void vgaClear();
 void vgaBackspace();

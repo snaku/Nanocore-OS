@@ -10,6 +10,9 @@ enum TerminalHexPrefix
 
 void terminalInit();
 void terminalHandleInput();
+
 void terminalWrite(const char* str);
 void terminalWriteHex(int64_t hex, uint8_t prefix);
+void terminalWriteFmt(const char* fmt, ...);
+
 void terminalClear();

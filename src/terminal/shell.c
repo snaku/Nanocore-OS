@@ -57,9 +57,7 @@ static void shellExecute(uint32_t cmdId, const char* args)
 
     if (!execute(args))
     {
-        terminalWrite("Error while trying to execute command: '");
-        terminalWrite(s_cmds[cmdId].name);
-        terminalWrite("'\n");
+        terminalWriteFmt("Error while trying to execute command '%s'.\n", s_cmds[cmdId].name);
     }
 }
 
@@ -81,8 +79,8 @@ void shellTryExecute(const char* cmdStr)
 
     for (uint32_t i = CMD_HELP; i < CMD_MAX; i++)
     {
-        size_t cmdLen = cmdEnd - cmdStr;
         const ShellCmd* cmd = &s_cmds[i];
+        size_t cmdLen = cmdEnd - cmdStr;
 
         if (strlen(cmd->name) == cmdLen &&
             strncmp(cmdStr, cmd->name, cmdLen) == 0)
@@ -132,11 +130,8 @@ static ncbool shellExecuteHelp(const char* args)
 
     for (uint32_t i = CMD_HELP; i < CMD_MAX; i++)
     {
-        terminalWrite("'");
-        terminalWrite(s_cmds[i].name);
-        terminalWrite("': ");
-        terminalWrite(s_cmds[i].descr);
-        terminalWrite("\n");
+        const ShellCmd* cmd = &s_cmds[i];
+        terminalWriteFmt("'%s': %s\n", cmd->name, cmd->descr);
     }
 
     return true;
@@ -149,8 +144,7 @@ static ncbool shellExecuteEcho(const char* args)
         return false;
     }
 
-    terminalWrite(args);
-    terminalWrite("\n");
+    terminalWriteFmt("%s\n", args);
 
     return true;
 }
@@ -234,25 +228,12 @@ static ncbool shellExecuteInfo(const char* args)
     }
 
     const NcosInfo* ncosInfo = ncosGetInfo();
-
-    terminalWrite(ncosInfo->name);
-    terminalWrite(" ");
-    terminalWrite(ncosInfo->version);
-    terminalWrite("\n");
-
-    terminalWrite("Architecture: ");
-    terminalWrite(ncosInfo->arch);
-    terminalWrite("\n");
+    terminalWriteFmt("%s %s\n", ncosInfo->name, ncosInfo->version);
+    terminalWriteFmt("Architecture: %s\n", ncosInfo->arch);
 
     const CpuInfo* cpuInfo = cpuGetInfo();
-
-    terminalWrite("CPU: ");
-    terminalWrite(cpuInfo->name);
-    terminalWrite("\n");
-
-    terminalWrite("CPU Vendor: ");
-    terminalWrite(cpuInfo->vendor);
-    terminalWrite("\n");
+    terminalWriteFmt("CPU: %s\n", cpuInfo->name);
+    terminalWriteFmt("CPU Vendor: %s\n", cpuInfo->vendor);
 
     return true;
 }

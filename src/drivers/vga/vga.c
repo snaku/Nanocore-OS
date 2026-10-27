@@ -118,6 +118,50 @@ void vgaPuthex(int64_t hex, int color, ncbool usePrefix)
     vgaPuts(buff, color);
 }
 
+void vgaPutFmtV(int color, const char* fmt, va_list args)
+{
+    while (*fmt != '\0')
+    {
+        if (*fmt == '%')
+        {
+            switch (*(fmt + 1))
+            {
+                case 'd':
+                    int num = va_arg(args, int);
+                    vgaPuti(num, color);
+                    break;
+
+                case 's':
+                    const char* str = va_arg(args, char*);
+                    vgaPuts(str, color);
+                    break;
+
+                case '%':
+                    vgaPutc('%', color);
+                    break;
+            }
+
+            fmt += 2;
+
+            continue;
+        }
+
+        char str[2] = {*fmt, '\0'};
+        vgaPuts(str, color);
+
+        fmt++;
+    }
+}
+
+void vgaPutFmt(int color, const char* fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    vgaPutFmtV(color, fmt, args);
+    va_end(args);
+}
+
 void vgaClear()
 {
     for (int i = 0; i < VGA_COL_MAX * VGA_LINE_MAX; i++)

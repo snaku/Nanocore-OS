@@ -4,6 +4,7 @@
 #include "drivers/keyboard/keyboard.h"
 #include "ncstd/ctype.h"
 #include "ncstd/string.h"
+#include "ncstd/stdarg.h"
 
 static char s_keyToChar[37] =
 {
@@ -195,6 +196,15 @@ void terminalWrite(const char* str)
 void terminalWriteHex(int64_t hex, uint8_t prefix)
 {
     vgaPuthex(hex, VGA_COLOR_WHITE, prefix == TERMINAL_HEX_PREFIX);
+}
+
+void terminalWriteFmt(const char* fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    vgaPutFmtV(VGA_COLOR_WHITE, fmt, args);
+    va_end(args);
 }
 
 void terminalClear()
