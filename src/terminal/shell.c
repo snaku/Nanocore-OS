@@ -46,7 +46,7 @@ static const ShellCmd s_cmds[CMD_MAX] =
     {"help", "Print the command list.", shellExecuteHelp},
     {"echo", "Print a string to the terminal.", shellExecuteEcho},
     {"clear", "Clear the terminal.", shellExecuteClear},
-    {"dump", "Dump registers or 16 bytes starting at a memory address.", shellExecuteDump},
+    {"dump", "Dump registers or 1 to 256 bytes starting at a memory address.", shellExecuteDump},
     {"info", "Print info of the system.", shellExecuteInfo},
     {"reboot", "Reboot the system.", shellExecuteReboot}
 };
@@ -132,6 +132,50 @@ static inline ncbool shellHasArgs(const char* args)
     return args != NULL;
 }
 
+static ncbool shellFindArg(const char* args, uint8_t idx, char* buff, size_t buffLen)
+{
+    if (args == NULL || 
+        buff == NULL ||
+        buffLen == 0)
+    {
+        return false;
+    }
+
+    buff[0] = '\0';
+
+    for (uint32_t i = 0; i <= idx; i++)
+    {
+        while (*args != '\0' && 
+               isspace(*args))
+        {
+            args++;
+        }
+
+        if (i == idx)
+        {
+            uint32_t i = 0;
+            while (*args != '\0' && 
+                   !isspace(*args) &&
+                    i < buffLen - 1)
+            {
+                buff[i++] = *args++;
+            }
+
+            buff[i] = '\0';
+
+            return true;
+        }
+
+        while (*args != '\0' &&
+               !isspace(*args))
+        {
+            args++;
+        }
+    }
+
+    return false;
+}
+
 static ncbool shellExecuteHelp(const char* args)
 {
     if (shellHasArgs(args))
@@ -190,42 +234,60 @@ static ncbool shellDumpRegs()
 
 static ncbool shellDumpMemory(const char* args)
 {
-    char* end;
-    uint64_t addr = strtoull(args, &end, 16);
-    if (addr == 0 ||
-        end == args ||
-        *end != '\0')
+    char addrBuff[17];
+    if (!shellFindArg(args, 0, addrBuff, sizeof(addrBuff)))
     {
         return false;
     }
 
     // TODO: check if the address is valid
+    uint64_t addr = strtoull(addrBuff, NULL, 16);
+    if (addr == 0)
+    {
+        return false;
+    }
 
-    terminalWriteFmt("%x: ", addr);
+    char countBuff[4];
+    if (!shellFindArg(args, 1, countBuff, sizeof(countBuff)))
+    {
+        return false;
+    }
+
+    uint64_t count = strtoull(countBuff, NULL, 10);
+    if (count == 0 ||
+        count > 256)
+    {
+        return false;
+    }
 
     uint8_t* ptr = (uint8_t*)addr;
-    for (uint32_t i = 0; i < 16; i++)
+    for (uint64_t i = 0; i < count; i += 16)
     {
-        terminalWriteHex(ptr[i], TERMINAL_HEX_NOPREFIX); // i don't care
-        terminalWrite(" ");
-    }
+        terminalWriteFmt("%x: ", addr + i);
 
-    terminalWrite("|");
-
-    for (uint32_t i = 0; i < 16; i++)
-    {
-        char c = (char)ptr[i];
-        if (isprint(c))
+        for (uint64_t j = 0; j < 16 && i + j < count; j++)
         {
-            terminalWriteFmt("%c", c);
+            terminalWriteHex(ptr[i + j], TERMINAL_HEX_NOPREFIX);
+            terminalWrite(" ");
         }
-        else
-        {
-            terminalWrite(".");
-        }
-    }
 
-    terminalWrite("|");
+        terminalWrite("|");
+
+        for (uint64_t j = 0; j < 16 && i + j < count; j++)
+        {
+            char c = ptr[i + j];
+            if (isprint(c))
+            {
+                terminalWriteFmt("%c", c);
+            }
+            else
+            {
+                terminalWrite(".");
+            }
+        }
+
+        terminalWrite("|\n");
+    }
 
     return true;
 }
