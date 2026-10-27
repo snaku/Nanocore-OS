@@ -122,55 +122,55 @@ void vgaPutFmtV(int color, const char* fmt, va_list args)
 {
     while (*fmt != '\0')
     {
-        if (*fmt == '%')
+        if (*fmt != '%')
         {
-            switch (*(fmt + 1))
-            {
-                case 'd':
-                {
-                    int num = va_arg(args, int);
-                    vgaPuti(num, color);
-                    break;
-                }
+            char str[2] = {*fmt, '\0'};
+            vgaPuts(str, color);
 
-                case 'c':
-                {
-                    char c = (char)va_arg(args, int);
-                    char str[2] = {c, '\0'};
-                    vgaPuts(str, color);
-                    break;
-                }
-
-                case 's':
-                {
-                    const char* str = va_arg(args, char*);
-                    vgaPuts(str, color);
-                    break;
-                }
-
-                case 'x':
-                {
-                    int64_t hex = va_arg(args, int64_t);
-                    vgaPuthex(hex, color, true);
-                    break;
-                }
-
-                case '%':
-                {
-                    vgaPutc('%', color);
-                    break;
-                }
-            }
-
-            fmt += 2;
+            fmt++;
 
             continue;
         }
 
-        char str[2] = {*fmt, '\0'};
-        vgaPuts(str, color);
+        switch (*(fmt + 1))
+        {
+            case 'd':
+            {
+                int num = va_arg(args, int);
+                vgaPuti(num, color);
+                break;
+            }
 
-        fmt++;
+            case 'c':
+            {
+                char c = (char)va_arg(args, int);
+                char str[2] = {c, '\0'};
+                vgaPuts(str, color);
+                break;
+            }
+
+            case 's':
+            {
+                const char* str = va_arg(args, char*);
+                vgaPuts(str, color);
+                break;
+            }
+
+            case 'x':
+            {
+                int64_t hex = va_arg(args, int64_t);
+                vgaPuthex(hex, color, true);
+                break;
+            }
+
+            case '%':
+            {
+                vgaPutc('%', color);
+                break;
+            }
+        }
+
+        fmt += 2;
     }
 }
 

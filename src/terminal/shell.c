@@ -68,19 +68,23 @@ void shellTryExecute(const char* cmdStr)
         cmdStr++;
     }
 
+    if (*cmdStr == '\0')
+    {
+        return;
+    }
+
     const char* cmdEnd = cmdStr;
     while (*cmdEnd != '\0' &&
-           *cmdEnd != ' ')
+           !isspace(*cmdEnd))
     {
         cmdEnd++;
     }
 
     uint32_t foundCmd = CMD_NONE;
-
+    size_t cmdLen = cmdEnd - cmdStr;
     for (uint32_t i = CMD_HELP; i < CMD_MAX; i++)
     {
         const ShellCmd* cmd = &s_cmds[i];
-        size_t cmdLen = cmdEnd - cmdStr;
 
         if (strlen(cmd->name) == cmdLen &&
             strncmp(cmdStr, cmd->name, cmdLen) == 0)
@@ -90,28 +94,34 @@ void shellTryExecute(const char* cmdStr)
         }
     }
 
-    if (foundCmd == CMD_NONE)
+    if (foundCmd != CMD_NONE)
     {
-        terminalWrite("Unknown command.\n");
-        return;
-    }
-
-    const char* args = NULL;
-    if (*cmdEnd == ' ')
-    {
-        cmdEnd++;
-        while (*cmdEnd == ' ')
+        while (isspace(*cmdEnd))
         {
             cmdEnd++;
         }
 
+        const char* args = NULL;
         if (*cmdEnd != '\0')
         {
             args = cmdEnd;
         }
+
+        shellExecute(foundCmd, args);
+    }
+    else
+    {
+        char cmd[cmdLen + 1];
+        memcpy(cmd, cmdStr, cmdLen);
+        cmd[cmdLen] = '\0';
+
+        terminalWriteFmt("Unknown command '%s'.\n", cmd);
     }
 
-    shellExecute(foundCmd, args);
+    if (foundCmd != CMD_CLEAR)
+    {
+        terminalWrite("\n");
+    }
 }
 
 static inline ncbool shellHasArgs(const char* args)
@@ -197,7 +207,7 @@ static ncbool shellDumpMemory(const char* args)
         terminalWrite(" ");
     }
 
-    terminalWrite(" | ");
+    terminalWrite("|");
 
     for (uint32_t i = 0; i < 16; i++)
     {
@@ -212,7 +222,7 @@ static ncbool shellDumpMemory(const char* args)
         }
     }
 
-    terminalWrite(" |");
+    terminalWrite("|");
 
     return true;
 }

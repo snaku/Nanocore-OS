@@ -65,15 +65,7 @@ static void terminalHandleEnter()
     {
         case TERMINAL_MODE_FREE: break;
         case TERMINAL_MODE_CMD:
-            if (s_cmdBuffIdx == 0)
-            {
-                terminalWrite("No command specified.\n");
-                terminalWritePrompt();
-                return;
-            }
-
             shellTryExecute(s_cmdBuff);
-
             terminalCmdBuffClear();
 
             terminalWritePrompt();
@@ -157,6 +149,11 @@ static void terminalHandleKey(uint8_t key)
 
         if (s_mode == TERMINAL_MODE_CMD)
         {
+            if (s_cmdBuffIdx >= TERMINAL_CMDBUFF_MAX - 1)
+            {
+                return;
+            }
+
             terminalAddToCmdBuff(character[0]);
         }
 

@@ -10,12 +10,12 @@
 __attribute__((noreturn))
 void krnlMain()
 {
-    terminalInit();
-
     picInit();
     idtInit();
 
     STI();
+
+    terminalInit();
 
     while (true)
     {
