@@ -188,12 +188,31 @@ static ncbool shellDumpMemory(const char* args)
 
     // TODO: check if the address is valid
 
+    terminalWriteFmt("%x: ", addr);
+
     uint8_t* ptr = (uint8_t*)addr;
     for (uint32_t i = 0; i < 16; i++)
     {
-        terminalWriteHex(*ptr++, TERMINAL_HEX_NOPREFIX); // i don't care
+        terminalWriteHex(ptr[i], TERMINAL_HEX_NOPREFIX); // i don't care
         terminalWrite(" ");
     }
+
+    terminalWrite(" | ");
+
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        char c = (char)ptr[i];
+        if (isprint(c))
+        {
+            terminalWriteFmt("%c", c);
+        }
+        else
+        {
+            terminalWrite(".");
+        }
+    }
+
+    terminalWrite(" |");
 
     return true;
 }

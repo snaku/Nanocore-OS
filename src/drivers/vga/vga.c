@@ -127,18 +127,39 @@ void vgaPutFmtV(int color, const char* fmt, va_list args)
             switch (*(fmt + 1))
             {
                 case 'd':
+                {
                     int num = va_arg(args, int);
                     vgaPuti(num, color);
                     break;
+                }
+
+                case 'c':
+                {
+                    char c = (char)va_arg(args, int);
+                    char str[2] = {c, '\0'};
+                    vgaPuts(str, color);
+                    break;
+                }
 
                 case 's':
+                {
                     const char* str = va_arg(args, char*);
                     vgaPuts(str, color);
                     break;
+                }
+
+                case 'x':
+                {
+                    int64_t hex = va_arg(args, int64_t);
+                    vgaPuthex(hex, color, true);
+                    break;
+                }
 
                 case '%':
+                {
                     vgaPutc('%', color);
                     break;
+                }
             }
 
             fmt += 2;

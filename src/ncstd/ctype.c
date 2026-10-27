@@ -5,6 +5,11 @@ ncbool isalpha(char c)
     return islower(c) || isupper(c);
 }
 
+ncbool isprint(char c)
+{
+    return c >= ' ' && c <= '~';
+}
+
 ncbool islower(char c)
 {
     return c >= 'a' && c <= 'z';
