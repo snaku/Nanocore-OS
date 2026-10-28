@@ -20,6 +20,7 @@ enum Cmd
     CMD_POKE,
     CMD_INFO,
     CMD_REBOOT,
+    CMD_REPEAT,
 
     CMD_MAX
 };
@@ -40,6 +41,7 @@ static ncbool shellExecuteDump(const char* args);
 static ncbool shellExecutePoke(const char* args);
 static ncbool shellExecuteInfo(const char* args);
 static ncbool shellExecuteReboot(const char* args);
+static ncbool shellExecuteRepeat(const char* args);
 
 static const ShellCmd s_cmds[CMD_MAX] =
 {
@@ -51,8 +53,26 @@ static const ShellCmd s_cmds[CMD_MAX] =
     {"dump", "Dump registers or 1 to 256 bytes starting at a memory address.", shellExecuteDump},
     {"poke", "Write a byte at a memory address.", shellExecutePoke},
     {"info", "Print info of the system.", shellExecuteInfo},
-    {"reboot", "Reboot the system.", shellExecuteReboot}
+    {"reboot", "Reboot the system.", shellExecuteReboot},
+    {"repeat", "Repeat a command n times (max = 16 times).", shellExecuteRepeat},
 };
+
+#define SHELL_REQUIRE_ARGS(args) \
+    if (!shellHasArgs(args))     \
+    {                            \
+        return false;            \
+    }
+
+#define SHELL_REQUIRE_NOARGS(args) \
+    if (shellHasArgs(args))        \
+    {                              \
+        return false;              \
+    }
+
+#define SHELL_DUMPADDR_MAX_COUNT 256
+
+#define SHELL_REPEAT_MAX 16
+#define SHELL_REPEAT_MAX_DEPTH 2
 
 static void shellExecute(uint32_t cmdId, const char* args)
 {
@@ -156,15 +176,19 @@ static ncbool shellFindArg(const char* args, uint8_t idx, char* buff, size_t buf
 
         if (i == idx)
         {
-            uint32_t i = 0;
+            uint32_t buffIdx = 0;
             while (*args != '\0' && 
-                   !isspace(*args) &&
-                    i < buffLen - 1)
+                   !isspace(*args))
             {
-                buff[i++] = *args++;
+                if (buffIdx >= buffLen - 1)
+                {
+                    return false;
+                }
+
+                buff[buffIdx++] = *args++;
             }
 
-            buff[i] = '\0';
+            buff[buffIdx] = '\0';
 
             return true;
         }
@@ -181,10 +205,7 @@ static ncbool shellFindArg(const char* args, uint8_t idx, char* buff, size_t buf
 
 static ncbool shellExecuteHelp(const char* args)
 {
-    if (shellHasArgs(args))
-    {
-        return false;
-    }
+    SHELL_REQUIRE_NOARGS(args);
 
     terminalWrite("COMMAND LIST:\n");
 
@@ -199,10 +220,7 @@ static ncbool shellExecuteHelp(const char* args)
 
 static ncbool shellExecuteEcho(const char* args)
 {
-    if (!shellHasArgs(args))
-    {
-        return false;
-    }
+    SHELL_REQUIRE_ARGS(args);
 
     terminalWriteFmt("%s\n", args);
 
@@ -211,10 +229,7 @@ static ncbool shellExecuteEcho(const char* args)
 
 static ncbool shellExecuteClear(const char* args)
 {
-    if (shellHasArgs(args))
-    {
-        return false;
-    }
+    SHELL_REQUIRE_NOARGS(args);
 
     terminalClear();
 
@@ -243,9 +258,10 @@ static ncbool shellDumpMemory(const char* args)
         return false;
     }
 
-    // TODO: check if the address is valid
-    uint64_t addr = strtoull(addrBuff, NULL, 16);
-    if (addr == 0)
+    char* endAddr;
+    uint64_t addr = strtoull(addrBuff, &endAddr, 16);
+    if (*endAddr != '\0' ||
+        addr == 0) // TODO: check if the address is valid
     {
         return false;
     }
@@ -256,9 +272,11 @@ static ncbool shellDumpMemory(const char* args)
         return false;
     }
 
-    uint64_t count = strtoull(countBuff, NULL, 10);
-    if (count == 0 ||
-        count > 256)
+    char* endCount;
+    uint64_t count = strtoull(countBuff, &endCount, 10);
+    if (*endCount != '\0' ||
+        count == 0 ||
+        count > SHELL_DUMPADDR_MAX_COUNT)
     {
         return false;
     }
@@ -297,10 +315,7 @@ static ncbool shellDumpMemory(const char* args)
 
 static ncbool shellExecuteDump(const char* args)
 {
-    if (!shellHasArgs(args))
-    {
-        return false;
-    }
+    SHELL_REQUIRE_ARGS(args);
 
     if (strcmp(args, "regs") == 0)
     {
@@ -319,10 +334,7 @@ static ncbool shellExecuteDump(const char* args)
 
 static ncbool shellExecutePoke(const char* args)
 {
-    if (!shellHasArgs(args))
-    {
-        return false;
-    }
+    SHELL_REQUIRE_ARGS(args);
 
     char addrBuff[17];
     if (!shellFindArg(args, 0, addrBuff, sizeof(addrBuff)))
@@ -330,9 +342,10 @@ static ncbool shellExecutePoke(const char* args)
         return false;
     }
 
-    // TODO: check if the address is valid
-    uint64_t addr = strtoull(addrBuff, NULL, 16);
-    if (addr == 0)
+    char* endAddr;
+    uint64_t addr = strtoull(addrBuff, &endAddr, 16);
+    if (*endAddr != '\0' ||
+        addr == 0) // TODO: check if the address is valid
     {
         return false;
     }
@@ -343,8 +356,10 @@ static ncbool shellExecutePoke(const char* args)
         return false;
     }
 
-    uint64_t val = strtoull(valBuff, NULL, 16);
-    if (val > 0xff)
+    char* endVal;
+    uint64_t val = strtoull(valBuff, &endVal, 16);
+    if (*endVal != '\0' ||
+        val > 0xff)
     {
         return false;
     }
@@ -361,10 +376,7 @@ static ncbool shellExecutePoke(const char* args)
 
 static ncbool shellExecuteInfo(const char* args)
 {
-    if (shellHasArgs(args))
-    {
-        return false;
-    }
+    SHELL_REQUIRE_NOARGS(args);
 
     const NcosInfo* ncosInfo = ncosGetInfo();
     terminalWriteFmt("%s %s\n", ncosInfo->name, ncosInfo->version);
@@ -379,12 +391,58 @@ static ncbool shellExecuteInfo(const char* args)
 
 static ncbool shellExecuteReboot(const char* args)
 {
-    if (shellHasArgs(args))
+    SHELL_REQUIRE_NOARGS(args);
+
+    OUTB(0x64, 0xfe);
+
+    return true;
+}
+
+static ncbool shellExecuteRepeat(const char* args)
+{
+    static uint32_t depth = 0;
+
+    SHELL_REQUIRE_ARGS(args);
+
+    if (depth >= SHELL_REPEAT_MAX_DEPTH)
     {
         return false;
     }
 
-    OUTB(0x64, 0xfe);
+    char countBuff[8];
+    if (!shellFindArg(args, 0, countBuff, sizeof(countBuff)))
+    {
+        return false;
+    }
+
+    char* end;
+    uint64_t count = strtoull(countBuff, &end, 10);
+    if (*end != '\0' ||
+        count == 0 ||
+        count > SHELL_REPEAT_MAX)
+    {
+        return false;
+    }
+
+    // find command to repeat
+    while (isdigit(*args))
+    {
+        args++;
+
+        if (*args == '\0')
+        {
+            return false;
+        }
+    }
+
+    depth++;
+
+    for (uint64_t i = 0; i < count; i++)
+    {
+        shellTryExecute(args);
+    }
+
+    depth--;
 
     return true;
 }
