@@ -79,8 +79,6 @@ void isrHandler0()
 // vector 33 (IRQ1)
 void isrHandler33()
 {
-    kbClearKeys();
-
     while (INB(0x64) & 0x01)
     {
         uint8_t scancode = INB(0x60);

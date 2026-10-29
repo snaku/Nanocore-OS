@@ -1,4 +1,5 @@
 #include "drivers/keyboard/keyboard.h"
+#include "ncstd/memory.h"
 
 // maps some ps/2 scancodes to KeyboardKeys
 static const uint8_t s_irq1ToKey[128] =
@@ -57,7 +58,13 @@ static const uint8_t s_irq1ToKey[128] =
     [0x3a] = KEY_CAPSLOCK
 };
 
-#define KEY_BUFF_MAX 16
+static const uint8_t s_irq1ExToKey[128] =
+{
+    [0x48] = KEY_UP,
+    [0x4b] = KEY_LEFT,
+    [0x4d] = KEY_RIGHT,
+    [0x50] = KEY_DOWN
+};
 
 typedef struct Keyboard
 {
@@ -70,12 +77,17 @@ typedef struct Keyboard
 } Keyboard;
 
 static Keyboard s_kb;
+static ncbool s_kbIsExScancode = false;
+
+#define KB_EX_SCANCODE 0xe0
 
 static uint8_t kbIrq1ToKey(uint8_t scancode)
 {
-    uint8_t key = s_irq1ToKey[scancode];
+    scancode &= 0x7f;
 
-    if (key >= KEY_MAX)
+    uint8_t key = s_kbIsExScancode ? s_irq1ExToKey[scancode] : s_irq1ToKey[scancode];
+    if (key == KEY_INVALID ||
+        key >= KEY_MAX)
     {
         return KEY_INVALID;
     }
@@ -101,7 +113,14 @@ static void kbUpdateModifier(uint8_t key, ncbool isPressed)
 
 void kbReadScancode(uint8_t scancode)
 {
-    uint8_t key = kbIrq1ToKey(scancode % 0x80);
+    if (scancode == KB_EX_SCANCODE)
+    {
+        s_kbIsExScancode = true;
+        return;
+    }
+    
+    uint8_t key = kbIrq1ToKey(scancode);
+    s_kbIsExScancode = false;
     if (key == KEY_INVALID)
     {
         return;
@@ -132,7 +151,7 @@ void kbReadScancode(uint8_t scancode)
     kbUpdateModifier(key, isPressed);
 }
 
-void kbClearKeys()
+static void kbClearKeys()
 {
     for (int i = 0; i < s_kb.pressedKeyCount; i++)
     {
@@ -148,14 +167,14 @@ void kbClearKeys()
     s_kb.releasedKeyCount = 0;
 }
 
-uint8_t* kbGetPressedKeys()
+uint8_t kbConsumePressedKeys(uint8_t* keysDst)
 {
-    return s_kb.pressedKeys;
-}
+    memcpy(keysDst, s_kb.pressedKeys, sizeof(s_kb.pressedKeys));
 
-uint8_t kbGetPressedKeyCount()
-{
-    return s_kb.pressedKeyCount;
+    uint8_t count = s_kb.pressedKeyCount;
+    kbClearKeys();
+
+    return count;
 }
 
 ncbool kbCheckUppercase()

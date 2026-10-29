@@ -3,6 +3,8 @@
 #include "ncstd/types.h"
 #include "ncstd/bool.h"
 
+#define KEY_BUFF_MAX 16
+
 enum KeyboardKey
 {
     KEY_INVALID,
@@ -65,7 +67,5 @@ enum KeyboardKey
 };
 
 void kbReadScancode(uint8_t scancode);
-void kbClearKeys();
-uint8_t* kbGetPressedKeys();
-uint8_t kbGetPressedKeyCount();
+uint8_t kbConsumePressedKeys(uint8_t* keysDst);
 ncbool kbCheckUppercase();

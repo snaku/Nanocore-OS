@@ -176,8 +176,8 @@ void terminalInit()
 
 void terminalHandleInput()
 {
-    uint8_t* keys = kbGetPressedKeys();
-    uint8_t keyCount = kbGetPressedKeyCount();
+    uint8_t keys[KEY_BUFF_MAX];
+    uint8_t keyCount = kbConsumePressedKeys(keys);
 
     for (int i = 0; i < keyCount; i++)
     {
